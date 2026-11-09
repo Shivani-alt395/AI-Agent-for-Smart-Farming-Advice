@@ -1,1 +1,10 @@
+[theme]
+primaryColor = "#1a7f3c"
+
+[server]
+headless = true
+maxUploadSize = 5
+
+[browser]
+gatherUsageStats = false
 
