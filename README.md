@@ -9,19 +9,19 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    Smart Farming AI Agent                        │
-│                                                                  │
+│                    Smart Farming AI Agent                       │
+│                                                                 │
 │  Frontend (HTML/CSS/JS)   FastAPI Backend   IBM Cloud Services  │
-│  ┌─────────────────┐      ┌─────────────┐   ┌───────────────┐  │
-│  │  Chat Interface │─────▶│  /api/v1    │──▶│ IBM Granite   │  │
-│  │  Multilingual   │      │  /ask       │   │ watsonx.ai    │  │
-│  │  Weather Widget │      │  /weather   │   └───────────────┘  │
+│  ┌─────────────────┐      ┌─────────────┐   ┌───────────────┐   │
+│  │  Chat Interface │─────▶│  /api/v1    │──▶│ IBM Granite  │   │
+│  │  Multilingual   │      │  /ask       │   │ watsonx.ai    │   │
+│  │  Weather Widget │      │  /weather   │   └───────────────┘   │
 │  │  Quick Q&A      │      │  /prices    │                       │
 │  └─────────────────┘      └──────┬──────┘                       │
-│                                  │                               │
+│                                  │                              │
 │         ┌────────────────────────┼──────────────────┐           │
-│         ▼                        ▼                   ▼           │
-│  ┌─────────────┐    ┌────────────────────┐  ┌──────────────┐   │
+│         ▼                        ▼                   ▼          │
+│  ┌─────────────┐    ┌────────────────────┐  ┌──────────────┐    │
 │  │ ChromaDB    │    │   External APIs     │  │  Language    │   │
 │  │ Vector Store│    │ ┌────────────────┐  │  │  Service     │   │
 │  │ RAG Context │    │ │ Open-Meteo API │  │  │ (Translation)│   │
