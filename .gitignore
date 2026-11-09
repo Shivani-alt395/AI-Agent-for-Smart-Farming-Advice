@@ -42,6 +42,9 @@ data/chroma_db/
 # User data (contains passwords)
 data/users.json
 
+# Keep placeholder files in data/
+!data/knowledge_base/.gitkeep
+
 # Pytest / coverage
 .pytest_cache/
 .coverage

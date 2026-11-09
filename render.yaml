@@ -1,0 +1,58 @@
+services:
+  - type: web
+    name: smart-farming-ai-agent
+    runtime: python
+    buildCommand: pip install --upgrade pip setuptools wheel && pip install -r requirements.txt
+    startCommand: uvicorn run:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: IBM_API_KEY
+        sync: false
+      - key: IBM_WATSONX_URL
+        value: https://us-south.ml.cloud.ibm.com
+      - key: IBM_WATSONX_PROJECT_ID
+        sync: false
+      - key: GRANITE_MODEL_ID
+        value: ibm/granite-4-h-small
+      - key: GRANITE_MAX_TOKENS
+        value: "1024"
+      - key: GRANITE_TEMPERATURE
+        value: "0.3"
+      - key: DATA_GOV_API_KEY
+        sync: false
+      - key: DATA_GOV_MANDI_URL
+        value: https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070
+      - key: APP_NAME
+        value: Smart Farming AI Agent
+      - key: APP_VERSION
+        value: "1.0.0"
+      - key: APP_HOST
+        value: "0.0.0.0"
+      - key: APP_DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: CHROMA_PERSIST_DIR
+        value: ./data/chroma_db
+      - key: CHROMA_COLLECTION_NAME
+        value: smart_farming_knowledge
+      - key: EMBEDDING_MODEL
+        value: sentence-transformers/all-MiniLM-L6-v2
+      - key: SUPPORTED_LANGUAGES
+        value: en,hi,mr,te,ta,kn,gu,pa,bn,or
+      - key: RAG_TOP_K
+        value: "5"
+      - key: RAG_CHUNK_SIZE
+        value: "512"
+      - key: RAG_CHUNK_OVERLAP
+        value: "64"
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM_NAME
+        value: Smart Farming AI Agent
+    healthCheckPath: /api/v1/health
