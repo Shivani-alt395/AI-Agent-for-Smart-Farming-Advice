@@ -1,0 +1,52 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environment
+venv/
+env/
+.venv/
+ENV/
+
+# Environment secrets — NEVER commit this
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+server.log
+server_err.log
+logs/
+
+# ChromaDB vector store (auto-rebuilt on startup)
+data/chroma_db/
+
+# User data (contains passwords)
+data/users.json
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Temp files
+*.tmp
+*.bak

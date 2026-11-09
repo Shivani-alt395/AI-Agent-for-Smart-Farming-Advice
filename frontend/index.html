@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Smart Farming AI Agent | IBM Granite</title>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌾</text></svg>"/>
+</head>
+<body>
+
+<!-- ═══════════ AUTH PAGE ═══════════ -->
+<div id="authPage" class="auth-page">
+
+  <!-- LEFT: Overview Panel -->
+  <div class="auth-overview">
+    <div class="overview-inner">
+      <div class="overview-logo">🌾</div>
+      <h1 class="overview-title">Smart Farming AI Agent</h1>
+      <p class="overview-tagline">Powered by <strong>IBM Granite</strong> · watsonx.ai · RAG Technology</p>
+      <p class="overview-desc">An intelligent AI assistant that empowers small-scale Indian farmers with real-time, data-driven agricultural advice in their local language.</p>
+
+      <div class="overview-features">
+        <div class="ov-item"><span class="ov-icon">🌤️</span><div><strong>Real-Time Weather</strong><br>7-day forecasts & smart irrigation scheduling</div></div>
+        <div class="ov-item"><span class="ov-icon">🌾</span><div><strong>Crop Recommendations</strong><br>Season-wise & region-specific guidance</div></div>
+        <div class="ov-item"><span class="ov-icon">🐛</span><div><strong>Pest & Disease Control</strong><br>IPM strategies & safe treatment advice</div></div>
+        <div class="ov-item"><span class="ov-icon">💰</span><div><strong>Live Mandi Prices</strong><br>APMC market rates for 18+ commodities</div></div>
+        <div class="ov-item"><span class="ov-icon">🌱</span><div><strong>Soil & Fertilizer</strong><br>NPK guidance & soil health management</div></div>
+        <div class="ov-item"><span class="ov-icon">🏛️</span><div><strong>Govt Schemes</strong><br>PM-KISAN, PMFBY, KCC, e-NAM assistance</div></div>
+      </div>
+
+      <div class="overview-badges">
+        <span class="ov-badge">IBM Cloud Lite</span>
+        <span class="ov-badge">IBM Granite LLM</span>
+        <span class="ov-badge">RAG Enabled</span>
+        <span class="ov-badge">10 Indian Languages</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Auth Card -->
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="auth-brand-icon">🌾</div>
+      <div class="auth-brand-name">Smart Farming AI</div>
+      <div class="auth-brand-sub">Powered by IBM Granite · watsonx.ai</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Login</button>
+      <button class="auth-tab" id="tabRegister" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <!-- ── LOGIN FORM ── -->
+    <form id="loginForm" class="auth-form" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com" required/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter password" required/>
+      </div>
+      <div class="form-error" id="loginError"></div>
+      <button type="submit" class="btn-auth">Login →</button>
+      <p class="auth-switch">Don't have an account? <a href="#" onclick="switchTab('register')">Register here</a></p>
+    </form>
+
+    <!-- ── REGISTER FORM (3 steps) ── -->
+    <div id="registerForm" class="auth-form hidden">
+
+      <!-- Step 1: Basic details + Send OTP -->
+      <div id="regStep1">
+        <div class="step-label">Step 1 of 2 — Enter your details</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" id="regName" placeholder="e.g. Ramesh Kumar" required/>
+          </div>
+          <div class="form-group">
+            <label>Email Address *</label>
+            <input type="email" id="regEmail" placeholder="you@example.com" required/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Confirm Email *</label>
+            <input type="email" id="regEmailConfirm" placeholder="Re-enter email" required/>
+          </div>
+          <div class="form-group">
+            <label>Password *</label>
+            <input type="password" id="regPassword" placeholder="Min 6 characters" required minlength="6"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>State *</label>
+            <select id="regState" required>
+              <option value="">-- Select State --</option>
+              <option>Andhra Pradesh</option><option>Arunachal Pradesh</option>
+              <option>Assam</option><option>Bihar</option><option>Chhattisgarh</option>
+              <option>Goa</option><option>Gujarat</option><option>Haryana</option>
+              <option>Himachal Pradesh</option><option>Jharkhand</option>
+              <option>Karnataka</option><option>Kerala</option>
+              <option>Madhya Pradesh</option><option>Maharashtra</option>
+              <option>Manipur</option><option>Meghalaya</option><option>Mizoram</option>
+              <option>Nagaland</option><option>Odisha</option><option>Punjab</option>
+              <option>Rajasthan</option><option>Sikkim</option><option>Tamil Nadu</option>
+              <option>Telangana</option><option>Tripura</option>
+              <option>Uttar Pradesh</option><option>Uttarakhand</option>
+              <option>West Bengal</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>District *</label>
+            <input type="text" id="regDistrict" placeholder="e.g. Nashik" required/>
+          </div>
+        </div>
+        <div class="form-error" id="step1Error"></div>
+        <button type="button" class="btn-auth" onclick="sendOTP()">
+          <span id="sendOtpBtnText">Send Verification Code →</span>
+        </button>
+        <p class="auth-switch">Already have an account? <a href="#" onclick="switchTab('login')">Login here</a></p>
+      </div>
+
+      <!-- Step 2: OTP verification -->
+      <div id="regStep2" class="hidden">
+        <div class="step-label">Step 2 of 2 — Verify your email</div>
+        <div class="otp-info" id="otpInfoMsg"></div>
+        <div class="form-group">
+          <label>Enter 6-digit Verification Code</label>
+          <input type="text" id="otpInput" placeholder="e.g. 123456" maxlength="6"
+            pattern="[0-9]{6}" inputmode="numeric" autocomplete="one-time-code"/>
+        </div>
+        <div class="form-error" id="step2Error"></div>
+        <button type="button" class="btn-auth" onclick="submitRegister()">Create Account →</button>
+        <div class="otp-resend">
+          Didn't receive the code?
+          <a href="#" onclick="sendOTP(true)">Resend OTP</a> ·
+          <a href="#" onclick="backToStep1()">Change email</a>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /auth-card -->
+</div><!-- /authPage -->
+
+<!-- ═══════════ MAIN APP PAGE ═══════════ -->
+<div id="appPage" class="hidden">
+
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">🌾</span>
+        <div>
+          <span class="logo-title">Smart Farming AI Agent</span>
+          <span class="logo-sub">Powered by IBM Granite · watsonx.ai</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="header-badges">
+          <span class="badge badge-ibm">IBM Cloud</span>
+          <span class="badge badge-granite">Granite LLM</span>
+          <div class="health-dot" id="healthDot" title="System Status"></div>
+        </div>
+        <div class="user-info">
+          <span class="user-avatar">👨‍🌾</span>
+          <span class="user-name" id="userNameDisplay"></span>
+          <button class="btn-logout" data-i18n="logoutBtn" onclick="logout()">Logout</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-layout">
+    <aside class="sidebar">
+
+      <div class="sidebar-card">
+        <h3 class="sidebar-card-title" data-i18n="langLabel">🌐 Language / भाषा</h3>
+        <select id="languageSelect" class="select-input">
+          <option value="en">English</option>
+          <option value="hi">Hindi (हिंदी)</option>
+          <option value="mr">Marathi (मराठी)</option>
+          <option value="te">Telugu (తెలుగు)</option>
+          <option value="ta">Tamil (தமிழ்)</option>
+          <option value="kn">Kannada (ಕನ್ನಡ)</option>
+          <option value="gu">Gujarati (ગુજરાતી)</option>
+          <option value="pa">Punjabi (ਪੰਜਾਬੀ)</option>
+          <option value="bn">Bengali (বাংলা)</option>
+          <option value="or">Odia (ଓଡ଼ིଆ)</option>
+        </select>
+      </div>
+
+      <div class="sidebar-card">
+        <h3 class="sidebar-card-title" data-i18n="locationLabel">📍 Farm Location</h3>
+        <div class="location-search-wrap">
+          <input type="text" id="locationSearch" class="text-input" placeholder="🔍 Search city or district..." oninput="searchLocation(this.value)" autocomplete="off"/>
+          <div id="locationSuggestions" class="location-suggestions hidden"></div>
+        </div>
+        <input type="text" id="locationName" class="text-input" placeholder="Location name" readonly/>
+        <div class="coord-row">
+          <input type="number" id="latitude"  class="text-input half" placeholder="Latitude"  step="0.0001"/>
+          <input type="number" id="longitude" class="text-input half" placeholder="Longitude" step="0.0001"/>
+        </div>
+        <button class="btn-secondary" data-i18n="gpsBtn" onclick="detectLocation()">📡 Auto-detect GPS</button>
+        <div id="profileLocation" class="profile-location"></div>
+      </div>
+
+      <div class="sidebar-card" id="weatherWidget" style="display:none">
+        <h3 class="sidebar-card-title" data-i18n="weatherLabel">🌤️ Current Weather</h3>
+        <div id="weatherContent"></div>
+      </div>
+
+      <div class="sidebar-card" id="mandiWidget" style="display:none">
+        <h3 class="sidebar-card-title" id="mandiWidgetTitle">💰 Mandi Prices</h3>
+        <div id="mandiContent"></div>
+        <div class="mandi-footer">
+          <span id="mandiLocation" style="font-size:10px;color:var(--gray-60)"></span>
+          <button class="mandi-refresh-btn" onclick="refreshMandi()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <h3 class="sidebar-card-title" data-i18n="quickLabel">💡 Quick Questions</h3>
+        <div class="quick-questions" id="quickQuestionsContainer">
+          <button class="quick-btn crop"    data-q="What crop should I grow this Kharif season?">🌾 Best Kharif crop?</button>
+          <button class="quick-btn market"  data-q="What is today's mandi rate for tomatoes?">💰 Tomato mandi price?</button>
+          <button class="quick-btn pest"    data-q="How to control pests in wheat crop organically?">🐛 Wheat pest control?</button>
+          <button class="quick-btn weather" data-q="When should I irrigate my rice crop?">💧 Rice irrigation?</button>
+          <button class="quick-btn soil"    data-q="How to improve soil health naturally?">🌱 Improve soil health?</button>
+          <button class="quick-btn scheme"  data-q="What government schemes are available for small farmers?">🏛️ Govt schemes?</button>
+          <button class="quick-btn market"  data-q="What is the MSP for wheat this year 2024-25?">📋 Wheat MSP 2024-25?</button>
+          <button class="quick-btn pest"    data-q="My tomato leaves are curling, what disease is this?">🍅 Tomato leaf curl?</button>
+        </div>
+      </div>
+
+    </aside>
+
+    <section class="chat-section">
+      <div class="chat-header">
+        <div class="chat-header-left">
+          <div class="chat-icon">🤖</div>
+          <div>
+            <div class="chat-title">Farming Assistant</div>
+            <div class="chat-subtitle" id="chatSubtitle">Ask about crops, weather, pests, market prices & more</div>
+          </div>
+        </div>
+        <button class="btn-clear" data-i18n="clearBtn" onclick="clearChat()">🗑️ Clear</button>
+      </div>
+      <div class="messages-container" id="messagesContainer"></div>
+      <div class="input-area">
+        <div class="input-row">
+          <textarea id="questionInput" class="question-input"
+            placeholder="Type your question... e.g. 'मेरी फसल में कीड़े लग रहे हैं क्या करूँ?' or 'What crop to sow in winter?'"
+            rows="2" onkeydown="handleKeyDown(event)" oninput="updateCharCount()"></textarea>
+          <button class="btn-send" id="sendBtn" onclick="sendQuestion()">
+            <span id="sendIcon">➤</span><span id="sendText">Send</span>
+          </button>
+        </div>
+        <div class="input-footer">
+          <span class="char-count" id="charCount">0 / 2000</span>
+          <span class="input-hint">Ctrl+Enter to send</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>🌾 Smart Farming AI Agent</span>
+    <span class="footer-sep">·</span>
+    <span>IBM Cloud Lite + IBM Granite (watsonx.ai)</span>
+    <span class="footer-sep">·</span>
+    <span>RAG · ChromaDB · FastAPI · Problem Statement #9</span>
+  </footer>
+</div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
