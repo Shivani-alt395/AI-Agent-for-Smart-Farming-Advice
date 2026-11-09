@@ -79,6 +79,30 @@ CATEGORY_BADGE = {
     "soil": "🌱 Soil", "market": "💰 Market", "general": "💬 General",
 }
 
+import json
+from pathlib import Path
+
+_TR_PATH = Path(__file__).with_name("translations.json")
+TRANSLATIONS: Dict[str, Dict[str, Any]] = json.loads(_TR_PATH.read_text(encoding="utf-8"))
+
+
+def cur_lang() -> str:
+    return st.session_state.get("lang", "en")
+
+
+def tr(key: str, *args):
+    """Translate a UI string using the same table as the old frontend (translations.json)."""
+    table = TRANSLATIONS.get(cur_lang(), TRANSLATIONS["en"])
+    val = table.get(key, TRANSLATIONS["en"].get(key, key))
+    if isinstance(val, str) and args:
+        val = val.replace("{0}", str(args[0]))
+    return val
+
+
+def _on_lang_change():
+    st.session_state.lang = st.session_state.language_widget
+
+
 # ── 2. Helpers ────────────────────────────────────────────────────────────────
 def run_async(coro):
     """Run an async coroutine from Streamlit's sync context."""
@@ -152,6 +176,7 @@ def init_state():
     ss.setdefault("otp_verified", False)
     ss.setdefault("pending_question", None)
     ss.setdefault("auth_disabled", False)
+    ss.setdefault("lang", "en")
 
 
 # ── 3. Auth page ──────────────────────────────────────────────────────────────
@@ -238,7 +263,7 @@ def sidebar(granite_live: bool):
         st.markdown(f"### 👨‍🌾 {ss.user.get('name', 'Farmer')}")
         if ss.user.get("email"):
             st.caption(ss.user["email"])
-        if st.button("Logout", use_container_width=True):
+        if st.button(tr("logoutBtn"), use_container_width=True):
             for k in ("user", "messages", "otp_sent_to"):
                 ss.pop(k, None)
             st.rerun()
@@ -247,28 +272,32 @@ def sidebar(granite_live: bool):
                    else "🟡 Demo mode — add IBM_API_KEY in secrets for Granite")
 
         st.divider()
-        lang = st.selectbox(
-            "🌐 Language / भाषा",
-            options=list(LANGUAGES.keys()),
+        codes = list(LANGUAGES.keys())
+        st.selectbox(
+            f"🌐 {tr('langLabel')}",
+            options=codes,
+            index=codes.index(cur_lang()),
             format_func=lambda c: LANGUAGES[c],
-            key="language",
+            key="language_widget",
+            on_change=_on_lang_change,
         )
 
         st.divider()
-        st.markdown("**📍 Farm location**")
-        q = st.text_input("Search city or district", key="loc_query", placeholder="e.g. Nashik")
+        st.markdown(f"**📍 {tr('locationLabel')}**")
+        q = st.text_input(tr("locationSearch"), key="loc_query", label_visibility="collapsed",
+                          placeholder=tr("locationSearch"))
         if q:
             results = geocode(q)
             if results:
                 pick = st.selectbox("Select match", range(len(results)),
                                     format_func=lambda i: results[i]["label"][:70])
-                if st.button("Use this location", use_container_width=True):
+                if st.button("✓ OK", use_container_width=True):
                     ss.lat, ss.lon = results[pick]["lat"], results[pick]["lon"]
                     parts = [p.strip() for p in results[pick]["label"].split(",")]
                     ss.loc_name = ", ".join([parts[0], parts[-3] if len(parts) >= 3 else parts[-1]])
                     st.rerun()
             else:
-                st.caption("No matches found.")
+                st.caption("—")
         elif ss.loc_name and ss.lat is None:
             # Registered users: geocode their profile location once
             res = geocode(ss.loc_name, 1)
@@ -282,16 +311,30 @@ def sidebar(granite_live: bool):
         if ss.lat is not None and ss.lon is not None:
             try:
                 w = fetch_weather(ss.lat, ss.lon, ss.loc_name or "Your Farm")
+                today = (w.forecast_days or [{}])[0]
                 st.divider()
-                st.markdown("**🌤️ Current weather**")
+                st.markdown(f"**{tr('weatherLabel')}**")
+                if today.get("source") == "fallback":
+                    st.warning("Live weather unavailable (Open-Meteo unreachable). Showing placeholder values.")
                 c1, c2 = st.columns(2)
                 c1.metric("Max", f"{w.temperature_max:.0f}°C")
                 c2.metric("Min", f"{w.temperature_min:.0f}°C")
-                c1.metric("Rain", f"{w.precipitation:.1f} mm")
-                c2.metric("Wind", f"{w.wind_speed:.0f} km/h")
+                c1.metric(f"{tr('weatherRain')} (today)", f"{w.precipitation:.1f} mm")
+                chance = today.get("rain_chance")
+                c2.metric("Chance", f"{chance:.0f}%" if chance is not None else "—")
+                c1.metric(tr("weatherWind"), f"{w.wind_speed:.0f} km/h")
+                if w.humidity is not None:
+                    c2.metric(tr("weatherHumidity"), f"{w.humidity:.0f}%")
                 st.caption(w.condition)
-            except Exception:
-                pass
+                if w.forecast_days:
+                    rain_df = pd.DataFrame(
+                        {"mm": [d.get("precipitation") or 0 for d in w.forecast_days]},
+                        index=[d["date"][5:] for d in w.forecast_days],
+                    )
+                    st.caption(f"{tr('weatherRain')} — 7d (mm)")
+                    st.bar_chart(rain_df, height=110)
+            except Exception as exc:
+                st.caption(f"⚠️ Weather unavailable: {exc}")
 
         # Mandi widget
         state_guess = (ss.loc_name.split(",")[-1].strip() if ss.loc_name else None) or ss.user.get("state") or None
@@ -308,13 +351,13 @@ def sidebar(granite_live: bool):
             pass
 
         st.divider()
-        st.markdown("**💡 Quick questions**")
-        for label, question in QUICK_QUESTIONS:
-            if st.button(label, key=f"qq_{label}", use_container_width=True):
-                ss.pending_question = question
+        st.markdown(f"**💡 {tr('quickLabel')}**")
+        for i, item in enumerate(tr("quick")):
+            if st.button(item["label"], key=f"qq_{i}", use_container_width=True):
+                ss.pending_question = item["q"]
                 st.rerun()
 
-        if st.button("🗑️ Clear chat", use_container_width=True):
+        if st.button(tr("clearBtn"), use_container_width=True):
             ss.messages = []
             ss.session_id = str(uuid.uuid4())
             st.rerun()
@@ -322,11 +365,12 @@ def sidebar(granite_live: bool):
 
 # ── 5. Rendering of an assistant message ──────────────────────────────────────
 def render_assistant(msg: Dict[str, Any]):
-    st.markdown(msg["content"])
+    st.markdown(tr("greeting", st.session_state.user.get("name", "Farmer")) if msg.get("greeting") else msg["content"])
     meta = msg.get("meta") or {}
     cat = meta.get("category")
     if cat:
-        st.caption(f"{CATEGORY_BADGE.get(cat, cat)} · confidence {meta.get('confidence', 0):.0%}")
+        cat_label = tr("catLabels").get(cat, cat)
+        st.caption(f"{CATEGORY_BADGE.get(cat, '')} {cat_label} · {tr('confidence')} {meta.get('confidence', 0):.0%}")
 
     market = meta.get("market_data")
     if market and market.get("prices"):
@@ -344,7 +388,7 @@ def render_assistant(msg: Dict[str, Any]):
 
     sources = meta.get("sources")
     if sources:
-        with st.expander(f"📚 Sources ({len(sources)})"):
+        with st.expander(f"📚 {tr('sources')} ({len(sources)})"):
             for s in sources:
                 st.markdown(f"**{s['source']}** · relevance {s['relevance_score']:.0%}")
                 st.caption(s["content"])
@@ -356,16 +400,13 @@ def chat_page():
     agent, granite_live = load_backend()
     sidebar(granite_live)
 
-    st.title("🌾 Smart Farming AI Agent")
-    st.caption("Ask about crops, weather, pests, soil, market prices & government schemes")
+    st.title(f"🌾 {tr('chatTitle')}")
+    st.caption(tr("chatSubtitle"))
+    if ss.user.get("state") or ss.user.get("district"):
+        st.caption(tr("locRegistered", ", ".join(x for x in (ss.user.get("district"), ss.user.get("state")) if x)))
 
     if not ss.messages:
-        ss.messages.append({
-            "role": "assistant",
-            "content": f"Namaste {ss.user.get('name', 'Farmer')}! 🙏 I'm your farming assistant. "
-                       "Set your farm location in the sidebar for local weather and mandi advice, "
-                       "then ask me anything.",
-        })
+        ss.messages.append({"role": "assistant", "content": "", "greeting": True})
 
     for m in ss.messages:
         with st.chat_message(m["role"], avatar="🌾" if m["role"] == "assistant" else "👨‍🌾"):
@@ -374,7 +415,7 @@ def chat_page():
             else:
                 st.markdown(m["content"])
 
-    typed = st.chat_input("Ask a farming question…", max_chars=2000)
+    typed = st.chat_input(tr("placeholder"), max_chars=2000)
     question = typed or ss.pop("pending_question", None)
     if not question:
         return
@@ -384,11 +425,11 @@ def chat_page():
         st.markdown(question)
 
     with st.chat_message("assistant", avatar="🌾"):
-        with st.spinner("Thinking…"):
+        with st.spinner(tr("thinkingMsg")):
             try:
                 query = FarmingQuery(
                     question=question,
-                    language=Language(ss.get("language", "en")),
+                    language=Language(cur_lang()),
                     location=ss.loc_name or None,
                     latitude=ss.lat,
                     longitude=ss.lon,
