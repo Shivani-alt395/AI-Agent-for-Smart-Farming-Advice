@@ -52,7 +52,9 @@ class WeatherService:
                 "windspeed_10m_max",
                 "weathercode",
                 "relative_humidity_2m_max",
+                "precipitation_probability_max",
             ],
+            "current": ["temperature_2m", "relative_humidity_2m", "precipitation", "rain"],
             "current_weather": True,
             "timezone": "Asia/Kolkata",
             "forecast_days": days,
@@ -71,6 +73,8 @@ class WeatherService:
     def _parse_response(self, data: Dict[str, Any], location_name: str) -> WeatherData:
         daily = data.get("daily", {})
         current = data.get("current_weather", {})
+        live = data.get("current", {}) or {}
+        probs = daily.get("precipitation_probability_max", []) or []
 
         forecast_days: List[Dict[str, Any]] = []
         dates = daily.get("time", [])
@@ -85,6 +89,8 @@ class WeatherService:
                     "wind_speed": daily.get("windspeed_10m_max", [])[i] if i < len(daily.get("windspeed_10m_max", [])) else 10,
                     "condition": WMO_CODES.get(code, "Unknown"),
                     "humidity": daily.get("relative_humidity_2m_max", [])[i] if i < len(daily.get("relative_humidity_2m_max", [])) else 60,
+                    "rain_chance": probs[i] if i < len(probs) and probs[i] is not None else None,
+                    "source": "live",
                 }
             )
 
@@ -98,9 +104,12 @@ class WeatherService:
             location=location_name,
             temperature_max=temps_max[0] if temps_max else 30.0,
             temperature_min=temps_min[0] if temps_min else 22.0,
-            precipitation=precip[0] if precip else 0.0,
+            precipitation=max(
+                (precip[0] if precip and precip[0] is not None else 0.0),
+                (live.get("precipitation") or 0.0),
+            ),
             wind_speed=winds[0] if winds else 10.0,
-            humidity=daily.get("relative_humidity_2m_max", [60])[0],
+            humidity=live.get("relative_humidity_2m") or daily.get("relative_humidity_2m_max", [60])[0],
             condition=WMO_CODES.get(code_today, "Clear sky"),
             forecast_days=forecast_days,
         )
@@ -119,6 +128,8 @@ class WeatherService:
                     "wind_speed": 15.0,
                     "condition": "Partly cloudy" if i % 2 == 0 else "Clear sky",
                     "humidity": 65,
+                    "rain_chance": None,
+                    "source": "fallback",
                 }
             )
         return WeatherData(
